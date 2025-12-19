@@ -128,6 +128,7 @@ impl PhotoSize {
 			let path = format!("./thumbnails/{}", media_id);
 			fs::write(&path, animated_thumbnail.data.as_ref())
 				.await;
+       			info!("  thumbnail saved: {}", path);
 			#[cfg(not(feature = "log"))]
 			let _ = has_uploded; //fix unused warning
 			mxc

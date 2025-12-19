@@ -373,7 +373,7 @@ const NavBarItem = ({pack, iconOverride = null, onClickOverride = null, extraCla
 			${iconOverride ? html`
 				<span class="icon icon-${iconOverride}"/>
 			` : html`
-				<img src=${makeThumbnailURL(pack.stickers[0].info?.thumbnail_url || pack.stickers[0].url)}
+				<img src=${makeThumbnailURL(pack.stickers[0].url)}
 					alt=${pack.stickers[0].body} class="visible" />
 			`}
 		</div>
