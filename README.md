@@ -93,6 +93,21 @@ Currently, there are no prebuild binaries available. So users of other platforms
 To build and install mstickereditor execute the following command:
 ```bash
 cargo install --locked mstickereditor
+cargo install --force --locked mstickereditor # rebuild
 ```
 Make sure that `~/.cargo/bin` is listed in the `PATH` environment variable otherwise, the `mstickereditor` executable can not be found.
 Check out [rust doc](https://doc.rust-lang.org/cargo/commands/cargo-install.html) for more information about `cargo install`.
+
+## Import stickers from telegram
+
+```bash
+mstickereditor help
+# dry-run
+mstickereditor import -d https://t.me/addstickers/xxxx
+# dry-run and save result image to disk
+mstickereditor import -d -s https://t.me/addstickers/xxxx
+# run
+mstickereditor import https://t.me/addstickers/xxxx
+
+# image-data hash cache file: ~/.local/share/mstickereditor/uploads
+```
