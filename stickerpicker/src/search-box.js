@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {html} from "../lib/htm/preact.js"
 
-export const SearchBox = ({onInput, onKeyUp, value, placeholder = 'Find stickers'}) => {
+export const SearchBox = ({onInput, onKeyUp, value, placeholder = '查找贴纸'}) => {
 	const component = html`
 		<div class="search-box">
 			<input type="text" placeholder=${placeholder} value=${value} onInput=${onInput} onKeyUp=${onKeyUp}/>

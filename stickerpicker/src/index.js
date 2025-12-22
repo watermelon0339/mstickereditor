@@ -59,7 +59,7 @@ class App extends Component {
 			theme: localStorage.mauStickerThemeOverride || this.defaultTheme,
 			frequentlyUsed: {
 				id: "frequently-used",
-				title: "Frequently used",
+				title: "常用贴纸",
 				stickerIDs: frequent.get(),
 				stickers: [],
 			},
@@ -313,7 +313,7 @@ class App extends Component {
 					`}
 					<${NavBarItem} pack=${this.state.frequentlyUsed} iconOverride="recent" onClickOverride=${onClickOverride}/>
 					${this.state.packs.map(pack => html`<${NavBarItem} id=${pack.id} pack=${pack} onClickOverride=${onClickOverride}/>`)}
-					<${NavBarItem} pack=${{id: "settings", title: "Settings"}} iconOverride="settings" onClickOverride=${onClickOverride}/>
+					<${NavBarItem} pack=${{id: "settings", title: "设置"}} iconOverride="settings" onClickOverride=${onClickOverride}/>
 				</nav>
 
 				${this.state.viewingGifs ? html`
@@ -336,20 +336,20 @@ const Settings = ({app}) => html`
 	<section class="stickerpack settings" id="pack-settings" data-pack-id="settings">
 		<h1>Settings</h1>
 		<div class="settings-list">
-			<button onClick=${app.reloadPacks}>Reload</button>
+			<button onClick=${app.reloadPacks}>刷新贴纸</button>
 			<div>
-				<label for="stickers-per-row">Stickers per row: ${app.state.stickersPerRow}</label>
+				<label for="stickers-per-row">每行贴纸数量: ${app.state.stickersPerRow}</label>
 				<input type="range" min=2 max=10 id="stickers-per-row" id="stickers-per-row"
 					value=${app.state.stickersPerRow}
 					onInput=${evt => app.setStickersPerRow(evt.target.value)}/>
 			</div>
 			<div>
-				<label for="theme">Theme: </label>
+				<label for="theme">主题: </label>
 				<select name="theme" id="theme" onChange=${evt => app.setTheme(evt.target.value)}>
-					<option value="default">Default</option>
-					<option value="light">Light</option>
-					<option value="dark">Dark</option>
-					<option value="black">Black</option>
+					<option value="default">默认</option>
+					<option value="light">浅色</option>
+					<option value="dark">深色</option>
+					<option value="black">黑色</option>
 				</select>
 			</div>
 		</div>
