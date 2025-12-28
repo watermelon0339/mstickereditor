@@ -334,7 +334,7 @@ class App extends Component {
 
 const Settings = ({app}) => html`
 	<section class="stickerpack settings" id="pack-settings" data-pack-id="settings">
-		<h1>Settings</h1>
+		<h1>设置</h1>
 		<div class="settings-list">
 			<button onClick=${app.reloadPacks}>刷新贴纸</button>
 			<div>
