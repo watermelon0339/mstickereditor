@@ -59,7 +59,20 @@ pub(crate) fn webm2webp<P: AsRef<Path>>(file: &P, width: Option<u32>, height: Op
 			let mut rgba_frame = Video::empty();
 			scaler.run(&decoded, &mut rgba_frame)?;
 
-			encoder.add_frame(rgba_frame.data(0), timestamp)?;
+			// ffmpeg frames can have per-row padding (stride) larger than width*4.
+			// Pack rows into a tightly sized buffer of new_width * new_height * 4 bytes.
+			let src = rgba_frame.data(0);
+			let stride = rgba_frame.stride(0) as usize;
+			let row_len = (new_width as usize) * 4;
+			let height_usize = new_height as usize;
+			let mut packed = Vec::with_capacity(row_len * height_usize);
+			for y in 0..height_usize {
+				let start = y * stride;
+				let end = start + row_len;
+				packed.extend_from_slice(&src[start..end]);
+			}
+
+			encoder.add_frame(&packed, timestamp)?;
 			timestamp += time_per_frame;
 		}
 		Ok(())
