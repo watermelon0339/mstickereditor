@@ -2,7 +2,7 @@
 """
 Set media attributes purpose to `pinned` to prevent being purged.
 
-- 从 stickerpicker/packs/thumbnails 目录中读取媒体图片的文件名(即 media_id)，设置对应媒体的 purpose 为 pinned。
+- 从 backup/uploads 文件中按行读取 JSON 字符串，并从其中的 mxc URL 提取媒体ID，设置对应媒体的 purpose 为 pinned。
 - - Sends request to:
         POST /_matrix/media/unstable/admin/media/<server>/<media id>/attributes?access_token=your_access_token
 
@@ -11,7 +11,7 @@ Usage:
 
 Optional flags:
         --server SERVER       Media repo server name (default: mtx01.cc)
-        --thumbs-dir PATH     Thumbnails directory (default: ../stickerpicker/packs/thumbnails)
+        --uploads-file PATH   File containing media_ids, one per line (default: ../backup/uploads)
         --dry-run             Print the request that would be sent without sending it
 
 Exit codes:
@@ -91,16 +91,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default="mtx01.cc",
         help="Server name for media IDs (default: %(default)s)",
     )
-    # Default thumbs dir: ../stickerpicker/packs/thumbnails relative to this script
-    default_thumbs = os.path.abspath(
+    # Default uploads file: ../backup/uploads relative to this script
+    default_uploads = os.path.abspath(
         os.path.join(
-            os.path.dirname(__file__), "..", "stickerpicker", "packs", "thumbnails"
+            os.path.dirname(__file__), "..", "backup", "uploads"
         )
     )
     parser.add_argument(
-        "--thumbs-dir",
-        default=default_thumbs,
-        help="Directory containing thumbnail files named by media_id (default: %(default)s)",
+        "--uploads-file",
+        default=default_uploads,
+        help="File containing media_ids, one per line (default: %(default)s)",
     )
     parser.add_argument(
         "--dry-run",
@@ -110,26 +110,46 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _extract_media_id(line: str) -> Optional[str]:
+    """Extract media_id from a JSON line containing 'url': 'mxc://<server>/<media_id>'."""
+    try:
+        obj = json.loads(line)
+        url = obj.get("url")
+        if not isinstance(url, str) or not url.startswith("mxc://"):
+            return None
+        rest = url[len("mxc://"):]
+        parts = rest.split("/", 1)
+        if len(parts) != 2 or not parts[1]:
+            return None
+        return parts[1]
+    except Exception:
+        return None
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     ns = parse_args(sys.argv[1:] if argv is None else argv)
 
-    # Validate thumbs directory
-    if not os.path.isdir(ns.thumbs_dir):
-        print(f"Thumbnails directory not found: {ns.thumbs_dir}")
+    # Validate uploads file
+    if not os.path.isfile(ns.uploads_file):
+        print(f"Uploads file not found: {ns.uploads_file}")
         return 1
 
-    # Gather media IDs from filenames in thumbnails dir
+    # Gather media IDs from JSON lines in uploads file
     media_ids: list[str] = []
-    for name in os.listdir(ns.thumbs_dir):
-        path = os.path.join(ns.thumbs_dir, name)
-        if os.path.isfile(path):
-            media_ids.append(name)
+    invalid = 0
+    with open(ns.uploads_file, "r", encoding="utf-8") as f:
+        for line in f:
+            mid = _extract_media_id(line.strip())
+            if mid:
+                media_ids.append(mid)
+            else:
+                invalid += 1
 
     if not media_ids:
-        print("No media IDs found in thumbnails directory.")
+        print("No valid media IDs found in uploads file.")
         return 0
 
-    print(f"Found {len(media_ids)} media IDs in {ns.thumbs_dir}")
+    print(f"Found {len(media_ids)} media IDs in {ns.uploads_file}" + (f", invalid lines: {invalid}" if invalid else ""))
 
     # Preview or execute
     success = 0

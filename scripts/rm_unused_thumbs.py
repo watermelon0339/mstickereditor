@@ -11,9 +11,6 @@ import json
 import argparse
 from typing import Set, List, Optional
 
-# 引入 keep_mmr.py 中的 API，用于设置媒体 purpose
-from keep_mmr import set_media_purpose
-
 
 def _default_paths() -> tuple[str, str]:
 	"""返回默认的 packs 和 thumbnails 目录路径。"""
@@ -49,12 +46,11 @@ def collect_used_thumbnails(packs_dir: str) -> Set[str]:
 
 		stickers = data.get("stickers", [])
 		for s in stickers:
-			info = s.get("info", {})
-			thumb_url = info.get("thumbnail_url")
-			if not thumb_url or not isinstance(thumb_url, str):
+			media_id = s.get("id")
+			if not media_id or not isinstance(media_id, str):
 				continue
 			# 期望形如: mxc://server/<id>
-			fname = thumb_url.rsplit("/", 1)[-1]
+			fname = media_id.rsplit("/", 1)[-1]
 			if fname:
 				used.add(fname)
 
@@ -73,8 +69,6 @@ def remove_unused_thumbnails(
 	used: Set[str],
 	dry_run: bool = False,
 	verbose: bool = False,
-	token: Optional[str] = None,
-	server: str = "mtx01.cc",
 ) -> int:
 	"""
 	删除不在 used 集合中的缩略图文件。
@@ -90,33 +84,16 @@ def remove_unused_thumbnails(
 	for name in to_remove:
 		path = os.path.join(thumbs_dir, name)
 		if dry_run:
-			print(f"[dry-run] 将先标记 purpose=none，然后删除: {path}")
+			print(f"[dry-run] 将删除: {path}")
 		else:
-			# 先标记 purpose，如果失败则不要删除本地文件
-			if not token:
-				if verbose:
-					print("未提供 token，无法标记 purpose，跳过删除")
-				continue
+			# 标记成功后再删除本地文件
 			try:
-				result = set_media_purpose(token=token, server=server, media_id=name, purpose="none")
-				ok = 200 <= result.status < 300
+				os.remove(path)
+				removed += 1
 				if verbose:
-					print(f"设置 purpose=none: media_id={name}，状态={result.status}{' (OK)' if ok else ' (FAIL)'}")
-				if not ok:
-					# 标记失败，不删除本地文件
-					if verbose:
-						print(f"标记失败，跳过删除: {path}")
-					continue
-				# 标记成功后再删除本地文件
-				try:
-					os.remove(path)
-					removed += 1
-					if verbose:
-						print(f"已删除: {path}")
-				except OSError as e:
-					print(f"删除失败: {path}: {e}")
-			except Exception as e:
-				print(f"设置 purpose 失败: media_id={name}: {e}")
+					print(f"已删除: {path}")
+			except OSError as e:
+				print(f"删除失败: {path}: {e}")
 
 	if verbose:
 		action = "将删除" if dry_run else "已删除"
@@ -129,9 +106,6 @@ def main():
 	packs_dir_default, thumbs_dir_default = _default_paths()
 
 	parser = argparse.ArgumentParser(description="删除 stickerpicker/packs/thumbnails 中未使用的缩略图文件")
-	# 与 keep_mmr.py 保持一致：token 为必填位置参数，server 为可选参数
-	parser.add_argument("token", help="Matrix Admin API access token (必填)")
-	parser.add_argument("--server", default="mtx01.cc", help="媒体服务器名 (默认: %(default)s)")
 	parser.add_argument("--packs-dir", default=packs_dir_default, help="packs 目录路径 (默认: 工作区 stickerpicker/packs)")
 	parser.add_argument("--thumbs-dir", default=thumbs_dir_default, help="thumbnails 目录路径 (默认: packs/thumbnails)")
 	parser.add_argument("--dry-run", action="store_true", help="仅显示将要删除的文件，不实际删除")
@@ -144,8 +118,6 @@ def main():
 		used,
 		dry_run=args.dry_run,
 		verbose=args.verbose,
-		token=args.token,
-		server=args.server,
 	)
 
 	if args.dry_run:

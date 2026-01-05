@@ -13,6 +13,9 @@ pub use sticker::{PhotoSize, Sticker};
 mod stickerpack;
 pub use stickerpack::{pack_url_to_name, StickerPack};
 
+#[cfg(feature = "log")]
+use log::{info, warn};
+
 #[derive(Debug, Deserialize)]
 pub struct Config {
 	pub bot_key: String
@@ -96,6 +99,8 @@ where
 		.await?
 		.json()
 		.await?;
+	#[cfg(feature = "log")]
+	info!("Telegram API {} response received: {:?}", operation, resp);
 	let result = match resp {
 		TgResponse::Ok { result, .. } => result,
 		TgResponse::Err {

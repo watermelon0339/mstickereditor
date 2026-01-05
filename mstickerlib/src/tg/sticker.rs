@@ -124,11 +124,14 @@ impl PhotoSize {
 			if !has_uploded {
 				info!("  upload skipped; file with this hash was already uploaded");
 			}
-			let media_id = mxc.strip_prefix("mxc://").unwrap_or_default().split('/').nth(1).unwrap_or_default();
-			let path = format!("./thumbnails/{}", media_id);
-			fs::write(&path, animated_thumbnail.data.as_ref())
-				.await;
-       			info!("  thumbnail saved: {}", path);
+			if (thumb == false) {
+				let media_id = mxc.strip_prefix("mxc://").unwrap_or_default().split('/').nth(1).unwrap_or_default();
+				let path = format!("./thumbnails/{}", media_id);
+				fs::write(&path, animated_thumbnail.data.as_ref())
+					.await;
+				#[cfg(feature = "log")]
+				info!("  thumbnail saved: {}", path);
+			}
 			#[cfg(not(feature = "log"))]
 			let _ = has_uploded; //fix unused warning
 			mxc
