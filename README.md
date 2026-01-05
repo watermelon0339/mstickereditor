@@ -105,3 +105,13 @@ https://aeolian-fur-083.notion.site/matrix-stickerpicker
 https://t.me/addstickers/LittleCuteTurtle
 https://t.me/addstickers/LittleGreenLion
 https://t.me/addstickers/EggYolkFace
+
+
+## Scripts
+
+```bash
+cd scripts
+python3 keep_mmr.py token --dry-run -v
+python3 rm_unused_thumbs.py token --dry-run -v
+python3 sync_uploads.py --dry-run -v
+```

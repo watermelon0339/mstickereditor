@@ -23,8 +23,21 @@ pub(crate) fn webm2webp<P: AsRef<Path>>(file: &P, width: Option<u32>, height: Op
 	let ctx_decoder = CodecContext::from_parameters(input.parameters())?;
 	let mut decoder = ctx_decoder.decoder().video()?;
 
-	let new_width = width.unwrap_or(decoder.width());
-	let new_height = height.unwrap_or(decoder.height());
+	let orig_width = decoder.width();
+	let orig_height = decoder.height();
+
+	let (new_width, new_height) = match (width, height) {
+		(Some(w), Some(h)) => (w, h),
+		(Some(w), None) => {
+			let h = ((w as f64) * (orig_height as f64) / (orig_width as f64)).round() as u32;
+			(w, h)
+		},
+		(None, Some(h)) => {
+			let w = ((h as f64) * (orig_width as f64) / (orig_height as f64)).round() as u32;
+			(w, h)
+		},
+		(None, None) => (orig_width, orig_height)
+	};
 
 	let mut scaler = ScalingContext::get(
 		decoder.format(),

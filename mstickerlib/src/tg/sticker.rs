@@ -104,8 +104,8 @@ impl PhotoSize {
 		if image.file_name.ends_with(".webm") && !advance_config.keep_webm {
 			#[cfg(feature = "ffmpeg")]
 			{
-				image = image.convert_webm2webp(Some(sticker_size as u32), Some(sticker_size as u32)).await?;
-				animated_thumbnail = animated_thumbnail.convert_webm2webp(Some(thumbnail_size as u32), Some(thumbnail_size as u32)).await?;
+				image = image.convert_webm2webp(Some(sticker_size as u32), None).await?;
+				animated_thumbnail = animated_thumbnail.convert_webm2webp(None, Some(thumbnail_size as u32)).await?;
 			}
 			#[cfg(not(feature = "ffmpeg"))]
 			return Err(Error::UnsupportedFormat(crate::error::UnsupportedFormat::Webm));

@@ -51,7 +51,7 @@ def _format_url(server: str, media_id: str, token: str) -> str:
     return f"{endpoint}?{parse.urlencode(query)}"
 
 
-def set_media_purpose_pinned(token: str, server: str, media_id: str) -> PurgeResult:
+def set_media_purpose(token: str, server: str, media_id: str, purpose: str = "pinned") -> PurgeResult:
     """Call the Matrix media admin set attributes API to set purpose to pinned."""
     url = _format_url(server, media_id, token)
     # If targeting localhost, add forwarded host header for upstream
@@ -61,7 +61,7 @@ def set_media_purpose_pinned(token: str, server: str, media_id: str) -> PurgeRes
         else {}
     )
     # Send JSON body to set purpose
-    body = json.dumps({"purpose": "pinned"}).encode("utf-8")
+    body = json.dumps({"purpose": purpose}).encode("utf-8")
     headers = {**headers, "Content-Type": "application/json"}
     req = request.Request(url=url, method="POST", headers=headers, data=body)
 
@@ -142,7 +142,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             success += 1
             continue
 
-        result = set_media_purpose_pinned(
+        result = set_media_purpose(
             token=ns.token,
             server=ns.server,
             media_id=mid,
