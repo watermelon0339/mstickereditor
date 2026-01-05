@@ -99,8 +99,7 @@ where
 		.await?
 		.json()
 		.await?;
-	#[cfg(feature = "log")]
-	info!("Telegram API {} response received: {:?}", operation, resp);
+
 	let result = match resp {
 		TgResponse::Ok { result, .. } => result,
 		TgResponse::Err {
