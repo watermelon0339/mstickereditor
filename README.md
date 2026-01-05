@@ -102,16 +102,33 @@ Check out [rust doc](https://doc.rust-lang.org/cargo/commands/cargo-install.html
 
 https://aeolian-fur-083.notion.site/matrix-stickerpicker
 
-https://t.me/addstickers/LittleCuteTurtle
-https://t.me/addstickers/LittleGreenLion
-https://t.me/addstickers/EggYolkFace
-
-
-## Scripts
-
 ```bash
+# 进入贴纸包目录
+cd stickerpicker/packs
+# 导入 telegram 贴纸
+mstickereditor import https://t.me/addstickers/LittleGreenLion https://t.me/addstickers/EggYolkFace https://t.me/addstickers/EggYolkGesture https://t.me/addstickers/LittleCuteTurtle
+# 生成索引文件
+mstickereditor create-index
+# 保存上传记录
+cd ../..
+cp ~/.local/share/mstickereditor/uploads ./backup/
+
+# 进入脚本目录
 cd scripts
-python3 keep_mmr.py token --dry-run
+# 清理未使用的缩略图
 python3 rm_unused_thumbs.py --dry-run -v
-python3 sync_uploads.py --dry-run -v
+# 同步上传记录（只保留使用中的上传记录）
+python3 sync_uploads.py token --dry-run -v
+cp ../backup/uploads ~/.local/share/mstickereditor/
+# 标记正在使用中的媒体文件，防止被删除
+python3 keep_mmr.py token --dry-run
+
+# 保存仓库
+cd ..
+git add .
+git commit -m 'feat: new pack xxx'
+git push
+
+# 更新托管文件
+./rsync.sh
 ```
